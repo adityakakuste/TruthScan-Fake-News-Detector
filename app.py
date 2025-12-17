@@ -5,14 +5,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 
-# Page configuration
+# Page config
 st.set_page_config(
     page_title="TruthScan - Fake News Detector",
     page_icon="📰",
     layout="centered"
 )
 
-# Title
 st.title("📰 TruthScan")
 st.subheader("AI Fake News Detection System")
 
@@ -21,7 +20,7 @@ st.write(
     "predict whether the news is **Fake** or **Real**."
 )
 
-# Load dataset
+# Load data
 @st.cache_data
 def load_data():
     df = pd.read_csv("fake_news.csv")
@@ -29,10 +28,14 @@ def load_data():
 
 df = load_data()
 
-# Convert labels to numeric
-df['label'] = df['label'].map({'fake': 0, 'real': 1})
+# 🔥 IMPORTANT FIXES
+df = df[['text', 'label']]          # keep only needed columns
+df.dropna(inplace=True)             # remove empty rows
+df['text'] = df['text'].astype(str)
 
-# Use only text and label
+# Normalize labels
+df['label'] = df['label'].str.lower().map({'fake': 0, 'real': 1})
+
 X = df['text']
 y = df['label']
 
@@ -41,7 +44,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# ML pipeline
+# Model pipeline
 model = Pipeline([
     ('tfidf', TfidfVectorizer(stop_words='english', max_df=0.7)),
     ('nb', MultinomialNB())
@@ -50,7 +53,7 @@ model = Pipeline([
 # Train model
 model.fit(X_train, y_train)
 
-# User input
+# UI input
 news_input = st.text_area("📝 Enter News Text", height=200)
 
 if st.button("🔍 Check Authenticity"):
@@ -65,13 +68,13 @@ if st.button("🔍 Check Authenticity"):
         else:
             st.success(f"✅ Real News\n\nConfidence: {probability*100:.2f}%")
 
-# Info sections
+# Info
 st.markdown("---")
 st.markdown("### 🧠 How It Works")
 st.markdown("""
-- Text is converted into numerical features using **TF-IDF**
-- **Naive Bayes** algorithm classifies the news
-- Model is trained on real-world fake and real news data
+- Text cleaned and converted using **TF-IDF**
+- **Naive Bayes** classifier predicts authenticity
+- Model trained on real & fake news dataset
 """)
 
 st.markdown("### 🛠 Tech Stack")
@@ -82,5 +85,4 @@ st.markdown("""
 - Streamlit  
 """)
 
-st.markdown("---")
 st.caption("ASEP Project | First Year Engineering")
