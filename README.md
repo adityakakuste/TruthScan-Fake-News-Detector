@@ -1,0 +1,1 @@
+# TruthScan-Fake-News-Detector
