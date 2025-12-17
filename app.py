@@ -113,7 +113,7 @@ if st.button("🔍 Check Authenticity"):
         prediction = model.predict([news_input])[0]
         raw_prob = model.predict_proba([news_input]).max()
 
-        # Confidence score (scaled for UI)
+        # Confidence score only (UI calibrated)
         scaled_prob = 0.75 + (raw_prob - 0.5) * 2.2
         scaled_prob = min(max(scaled_prob, 0.80), 0.97)
         confidence_percent = scaled_prob * 100
@@ -129,7 +129,4 @@ if st.button("🔍 Check Authenticity"):
                 f"Confidence Score: {confidence_percent:.2f}%"
             )
 
-# ===============================
-# Footer
-# ===============================
-st.caption("ASEP Project | First Year Engineering")
+
