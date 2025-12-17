@@ -19,47 +19,37 @@ st.title("📰 TruthScan")
 st.subheader("AI Fake News Detection System")
 
 st.write(
-    "Enter a news headline or article. The AI model analyzes linguistic "
-    "patterns to predict whether the news is **Fake** or **Real**."
+    "Enter a news headline or article to check whether it is **Fake** or **Real** "
+    "using an AI-based text classification model."
 )
 
 # ===============================
-# Load Dataset (CSV)
+# Load Dataset
 # ===============================
 df = pd.read_csv("fake_news.csv")
 
 # ===============================
 # Data Cleaning & Preparation
 # ===============================
-
-# Keep only required columns
 df = df[['title', 'text', 'label']]
 
-# Clean labels strictly
 df['label'] = df['label'].astype(str).str.strip().str.lower()
 df = df[df['label'].isin(['fake', 'real'])]
 
-# Combine title + text (important for accuracy)
-df['combined_text'] = (
-    df['title'].astype(str) + " " + df['text'].astype(str)
-)
-
+df['combined_text'] = df['title'].astype(str) + " " + df['text'].astype(str)
 df = df[['combined_text', 'label']]
 df.dropna(inplace=True)
 
-# Encode labels
 df['label'] = df['label'].map({'fake': 0, 'real': 1})
 
-# ===============================
-# Shuffle dataset (CRITICAL)
-# ===============================
+# Shuffle dataset
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 X = df['combined_text']
 y = df['label']
 
 # ===============================
-# Train-Test Split (Stratified)
+# Train-Test Split
 # ===============================
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -70,7 +60,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # ===============================
-# ML Pipeline (HIGH ACCURACY)
+# ML Model Pipeline
 # ===============================
 model = Pipeline([
     ('tfidf', TfidfVectorizer(
@@ -123,52 +113,23 @@ if st.button("🔍 Check Authenticity"):
         prediction = model.predict([news_input])[0]
         raw_prob = model.predict_proba([news_input]).max()
 
-        # ===============================
-        # CONFIDENCE IMPROVEMENT (UI LEVEL)
-        # ===============================
+        # Confidence score (scaled for UI)
         scaled_prob = 0.75 + (raw_prob - 0.5) * 2.2
         scaled_prob = min(max(scaled_prob, 0.80), 0.97)
         confidence_percent = scaled_prob * 100
 
-        if confidence_percent >= 90:
-            confidence_level = "Very High Confidence"
-        elif confidence_percent >= 80:
-            confidence_level = "High Confidence"
-        else:
-            confidence_level = "Moderate Confidence"
-
         if prediction == 0:
             st.error(
                 f"❌ Fake News\n\n"
-                f"Confidence Level: {confidence_level}\n"
                 f"Confidence Score: {confidence_percent:.2f}%"
             )
         else:
             st.success(
                 f"✅ Real News\n\n"
-                f"Confidence Level: {confidence_level}\n"
                 f"Confidence Score: {confidence_percent:.2f}%"
             )
 
 # ===============================
-# Info Section
+# Footer
 # ===============================
-st.markdown("---")
-st.markdown("### 🧠 How It Works")
-st.markdown("""
-- Headline and article text are combined for stronger signals  
-- TF-IDF converts text into numerical features  
-- Multinomial Naive Bayes classifies fake vs real news  
-- Accuracy is evaluated on unseen test data  
-- Confidence is calibrated for better user interpretation  
-""")
-
-st.markdown("### 🛠 Tech Stack")
-st.markdown("""
-- Python  
-- Pandas  
-- Scikit-learn  
-- Streamlit  
-""")
-
 st.caption("ASEP Project | First Year Engineering")
