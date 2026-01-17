@@ -4,7 +4,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
 
 # ===============================
 # Page Configuration
@@ -75,29 +74,6 @@ model = Pipeline([
 model.fit(X_train, y_train)
 
 # ===============================
-# Accuracy Badge
-# ===============================
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-
-st.markdown(
-    f"""
-    <div style="
-        background-color:#0f766e;
-        padding:12px 16px;
-        border-radius:10px;
-        color:white;
-        font-weight:bold;
-        display:inline-block;
-        margin-bottom:15px;
-    ">
-        Model Accuracy (Test Data): {accuracy*100:.2f}%
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# ===============================
 # User Input
 # ===============================
 news_input = st.text_area(
@@ -111,22 +87,9 @@ if st.button("🔍 Check Authenticity"):
         st.warning("Please enter some news text.")
     else:
         prediction = model.predict([news_input])[0]
-        raw_prob = model.predict_proba([news_input]).max()
-
-        # Confidence score only (UI calibrated)
-        scaled_prob = 0.75 + (raw_prob - 0.5) * 2.2
-        scaled_prob = min(max(scaled_prob, 0.80), 0.97)
-        confidence_percent = scaled_prob * 100
 
         if prediction == 0:
-            st.error(
-                f"❌ Fake News\n\n"
-                f"Confidence Score: {confidence_percent:.2f}%"
-            )
+            st.error("❌ Fake News")
         else:
-            st.success(
-                f"✅ Real News\n\n"
-                f"Confidence Score: {confidence_percent:.2f}%"
-            )
-
+            st.success("✅ Real News")
 
